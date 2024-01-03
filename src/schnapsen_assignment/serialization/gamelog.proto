@@ -1,0 +1,92 @@
+syntax = "proto3";
+
+
+
+message GameLog {
+    repeated ConditionGameLog condition1 = 1;
+    repeated ConditionGameLog condition2 = 2;
+    repeated ConditionGameLog condition3 = 3;
+    repeated ActionGameLog action1 = 11;
+    repeated ActionGameLog action2 = 12;
+    repeated ActionGameLog action3 = 13;
+    repeated ActionGameLog action4 = 14;
+    repeated ActionGameLog integration = 21;
+}
+
+
+message Move{
+    MoveType move_type = 1;
+    repeated Card cards = 2;
+}
+
+enum MoveType{
+    REGULAR = 0;
+    TRUMP_EXCHANGE = 1;
+    MARRIAGE = 2;
+}
+
+enum Card{
+    ACE_HEARTS = 0;
+    TWO_HEARTS = 1;
+    THREE_HEARTS = 2;
+    FOUR_HEARTS = 3;
+    FIVE_HEARTS = 4;
+    SIX_HEARTS = 5;
+    SEVEN_HEARTS = 6;
+    EIGHT_HEARTS = 7;
+    NINE_HEARTS = 8;
+    TEN_HEARTS = 9;
+    JACK_HEARTS = 10;
+    QUEEN_HEARTS = 11;
+    KING_HEARTS = 12;
+    ACE_CLUBS = 13;
+    TWO_CLUBS = 14;
+    THREE_CLUBS = 15;
+    FOUR_CLUBS = 16;
+    FIVE_CLUBS = 17;
+    SIX_CLUBS = 18;
+    SEVEN_CLUBS = 19;
+    EIGHT_CLUBS = 20;
+    NINE_CLUBS = 21;
+    TEN_CLUBS = 22;
+    JACK_CLUBS = 23;
+    QUEEN_CLUBS = 24;
+    KING_CLUBS = 25;
+    ACE_SPADES = 26;
+    TWO_SPADES = 27;
+    THREE_SPADES = 28;
+    FOUR_SPADES = 29;
+    FIVE_SPADES = 30;
+    SIX_SPADES = 31;
+    SEVEN_SPADES = 32;
+    EIGHT_SPADES = 33;
+    NINE_SPADES = 34;
+    TEN_SPADES = 35;
+    JACK_SPADES = 36;
+    QUEEN_SPADES = 37;
+    KING_SPADES = 38;
+    ACE_DIAMONDS = 39;
+    TWO_DIAMONDS = 40;
+    THREE_DIAMONDS = 41;
+    FOUR_DIAMONDS = 42;
+    FIVE_DIAMONDS = 43;
+    SIX_DIAMONDS = 44;
+    SEVEN_DIAMONDS = 45;
+    EIGHT_DIAMONDS = 46;
+    NINE_DIAMONDS = 47;
+    TEN_DIAMONDS = 48;
+    JACK_DIAMONDS = 49;
+    QUEEN_DIAMONDS = 50;
+    KING_DIAMONDS = 51;
+}
+
+message ActionGameLog {
+    int64 game_id = 1;
+    repeated Move outcomes = 2;
+}
+
+message ConditionGameLog {
+    int64 game_id = 1;
+    repeated bool outcomes = 2;
+}
+
