@@ -7,7 +7,6 @@ import click
 import requests
 
 from schnapsen.bots import RandBot
-from schnapsen_assignment.student import bot
 from schnapsen_assignment.student.bot import AssignmentBot
 from schnapsen.game import (BotState, GamePlayEngine, Move,
                             PlayerPerspective, SchnapsenDeckGenerator, SchnapsenHandGenerator,
@@ -22,11 +21,11 @@ def main() -> None:
     """The main entry point."""
 
 
-@main.command(name="check", help="")
+@main.command(name="check", help="Check from schnapsen_assignment.student.bot.AssignmentBot for compliance with the assignment")
 @click.option('--id', type=int, required=True, help="Your student ID")
 def test_bot(id: int) -> None:
     # student_bot = AssignmentBot()
-    student_bot = bot.AssignmentBot()
+    student_bot = AssignmentBot()
     game_cache = Path(".schnapsen_rollout_cache_{id}.json")
     if game_cache.exists():
         game_log = GameLog.FromString(game_cache.read_bytes())
@@ -73,6 +72,18 @@ def assess_correctness(student_bot: AssignmentBot, id: int, game_log: GameLog) -
 T = TypeVar('T', bound=bool | Move)
 
 
+def simple_perspective_string(perspective: PlayerPerspective, leader_move: Optional[Move])->str:
+    valid_moves: list[Move] = perspective.valid_moves()
+    trump_suit = perspective.get_trump_suit()
+    hand = perspective.get_hand()
+    won_cards = perspective.get_won_cards()
+    opponent_won_cards = perspective.get_opponent_won_cards()
+    known_cards_of_opponent_hand = perspective.get_known_cards_of_opponent_hand()
+
+    return f"Perspective[hand={[card for card in hand]}, phase={perspective.get_phase()}, leader_move={leader_move}, trump_suit={trump_suit}, valid_moves = {valid_moves}, won_cards={won_cards}, won_cards_opponent={opponent_won_cards}, known_opponent_cards={known_cards_of_opponent_hand}]"
+
+
+
 class CheckingGamePlayEngine(Generic[T], GamePlayEngine):
 
     class CheckingRequester(SimpleMoveRequester):
@@ -92,7 +103,7 @@ class CheckingGamePlayEngine(Generic[T], GamePlayEngine):
                     outcome = self.implementation(perspective, leader_move)
                     expected_outcome = next(self.expected_outcomes_iterator)
                     if outcome != expected_outcome:
-                        self.errors.append(f"Something is wrong with the condition {self.implementation}. For input {perspective}, {expected_outcome} was expected, but got {outcome}.")
+                        self.errors.append(f"Something is wrong with in your code. Expected {expected_outcome} , but got {outcome} for the condition {self.implementation}. --- For input {simple_perspective_string(perspective, leader_move)}.")
                 except Exception as e:
                     self.errors.append(f"An exception was raised from {self.implementation} with message: {e}")
 
