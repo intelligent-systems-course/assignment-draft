@@ -103,9 +103,9 @@ class CheckingGamePlayEngine(Generic[T], GamePlayEngine):
                     outcome = self.implementation(perspective, leader_move)
                     expected_outcome = next(self.expected_outcomes_iterator)
                     if outcome != expected_outcome:
-                        self.errors.append(f"Something is wrong with in your code. Expected {expected_outcome} , but got {outcome} for the condition {self.implementation}. --- For input {simple_perspective_string(perspective, leader_move)}.")
+                        self.errors.append(f"Something is wrong with in your code. Expected {expected_outcome} , but got {outcome} for the condition {self.implementation.__name__}. --- For input {simple_perspective_string(perspective, leader_move)}.")
                 except Exception as e:
-                    self.errors.append(f"An exception was raised from {self.implementation} with message: {e}")
+                    self.errors.append(f"An exception was raised from your bot's method {self.implementation.__name__} with message: {e}")
 
             bot_move = super().get_move(bot, perspective, leader_move)
             return bot_move
