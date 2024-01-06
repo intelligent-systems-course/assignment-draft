@@ -178,7 +178,7 @@ class IntegrationCheckingGamePlayEngine(GamePlayEngine):
                 try:
                     bot_move = super().get_move(bot, perspective, leader_move)
                 except Exception as e:
-                    self.errors.append(f"An exception was raised your bot with message: {e}")
+                    self.errors.append(f"An exception was raised by your bot with message: {e}")
                     bot_move = expected_move
                 if bot_move != expected_move:
                     self.errors.append(f"Bot played a wrong move. For input {perspective}, {expected_move} was expected, but got {bot_move}.")
