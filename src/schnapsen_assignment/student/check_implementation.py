@@ -36,17 +36,42 @@ def test_bot(id: int) -> None:
         game_log = GameLog.FromString(r.content)
         # TODO save content to a caching file
     condition_errors, action_errors, integration_errors = assess_correctness(student_bot, id, game_log)
+    no_errors = 'No errors found, implementation appears correct.'
     print(f"""
-Status report for {student_bot}.
-    Condition 1: {'No errors found' if not condition_errors[0] else condition_errors[0][0]}
-    Action 1: {'No errors found' if not action_errors[0] else action_errors[0][0]}
-    Condition 2: {'No errors found' if not condition_errors[1] else condition_errors[1][0]}
-    Condition 3: {'No errors found' if not condition_errors[2] else condition_errors[2][0]}
-    Action 2: {'No errors found' if not action_errors[1] else action_errors[1][0]}
-    Action 3: {'No errors found' if not action_errors[2] else action_errors[2][0]}
-    Action 4: {'No errors found' if not action_errors[3] else action_errors[3][0]}
+Status report for {student_bot}
+=================={"=" * len(str(student_bot))}
 
-    Intergation test: {'No errors found' if not integration_errors[0] else integration_errors[0][0]}
+Condition 1
+-----------
+    {no_errors if not condition_errors[0] else condition_errors[0][0]}
+
+Action 1
+--------
+    {no_errors if not action_errors[0] else action_errors[0][0]}
+
+Condition 2
+-----------
+    {no_errors if not condition_errors[1] else condition_errors[1][0]}
+
+Condition 3
+-----------
+    {no_errors if not condition_errors[2] else condition_errors[2][0]}
+
+Action 2
+--------
+    {no_errors if not action_errors[1] else action_errors[1][0]}
+
+Action 3
+--------
+    {no_errors if not action_errors[2] else action_errors[2][0]}
+
+Action 4
+--------
+    {no_errors if not action_errors[3] else action_errors[3][0]}
+
+Intergation test
+----------------
+    {no_errors if not integration_errors[0] else integration_errors[0][0]}
 """)
 
 
@@ -72,7 +97,7 @@ def assess_correctness(student_bot: AssignmentBot, id: int, game_log: GameLog) -
 T = TypeVar('T', bound=bool | Move)
 
 
-def simple_perspective_string(perspective: PlayerPerspective, leader_move: Optional[Move])->str:
+def simple_perspective_string(perspective: PlayerPerspective, leader_move: Optional[Move]) -> str:
     valid_moves: list[Move] = perspective.valid_moves()
     trump_suit = perspective.get_trump_suit()
     hand = perspective.get_hand()
@@ -81,7 +106,6 @@ def simple_perspective_string(perspective: PlayerPerspective, leader_move: Optio
     known_cards_of_opponent_hand = perspective.get_known_cards_of_opponent_hand()
 
     return f"Perspective[hand={[card for card in hand]}, phase={perspective.get_phase()}, leader_move={leader_move}, trump_suit={trump_suit}, valid_moves = {valid_moves}, won_cards={won_cards}, won_cards_opponent={opponent_won_cards}, known_opponent_cards={known_cards_of_opponent_hand}]"
-
 
 
 class CheckingGamePlayEngine(Generic[T], GamePlayEngine):
