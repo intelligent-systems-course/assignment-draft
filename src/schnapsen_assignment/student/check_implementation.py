@@ -1,5 +1,4 @@
 import itertools
-from pathlib import Path
 from random import Random
 from typing import Callable, Iterable, Iterator, Optional, Generic, TypeVar, cast
 import click
@@ -24,18 +23,17 @@ def main() -> None:
 @main.command(name="check", help="Check from schnapsen_assignment.student.bot.AssignmentBot for compliance with the assignment")
 @click.option('--id', type=int, required=True, help="Your student ID")
 def test_bot(id: int) -> None:
-    # student_bot = AssignmentBot()
     student_bot = AssignmentBot()
-    game_cache = Path(".schnapsen_rollout_cache_{id}.json")
-    if game_cache.exists():
-        game_log = GameLog.FromString(game_cache.read_bytes())
-    else:
-        r = requests.get(f'https://krr.cs.vu.nl/prins/assignment/v1/{id}/bot.gamelog')
-        if r.status_code != 200:
-            raise Exception("Server could not be contacted")
-        game_log = GameLog.FromString(r.content)
-        # TODO save content to a caching file
-    condition_errors, action_errors, integration_errors = assess_correctness(student_bot, id, game_log)
+    # game_cache = Path(f".schnapsen_rollout_cache_{id}.json")
+    # if game_cache.exists():
+    #     game_log = GameLog.FromString(game_cache.read_bytes())
+    # else:
+    r = requests.get(f'https://krr.cs.vu.nl/prins/assignment/v1/{id}/bot.gamelog')
+    if r.status_code != 200:
+        raise Exception("Server could not be contacted")
+    game_log = GameLog.FromString(r.content)
+    # TODO save content to a caching file
+    condition_errors, action_errors, integration_errors = assess_correctness(student_bot, game_log)
     no_errors = 'No errors found, implementation appears correct.'
     print(f"""
 Status report for {student_bot}
@@ -75,21 +73,21 @@ Intergation test
 """)
 
 
-def assess_correctness(student_bot: AssignmentBot, id: int, game_log: GameLog) -> tuple[list[list[str]], list[list[str]], list[list[str]]]:
+def assess_correctness(student_bot: AssignmentBot, game_log: GameLog) -> tuple[list[list[str]], list[list[str]], list[list[str]]]:
     condition_errors: list[list[str]] = []
-    condition_errors.append(assess_conditions_correctness(student_bot.condition1, id, game_log.condition1))
-    condition_errors.append(assess_conditions_correctness(student_bot.condition2, id, game_log.condition2))
-    condition_errors.append(assess_conditions_correctness(student_bot.condition3, id, game_log.condition3))
+    condition_errors.append(assess_conditions_correctness(student_bot.condition1, game_log.condition1))
+    condition_errors.append(assess_conditions_correctness(student_bot.condition2, game_log.condition2))
+    condition_errors.append(assess_conditions_correctness(student_bot.condition3, game_log.condition3))
 
     action_errors: list[list[str]] = []
     conditions: Iterator[Iterator[bool]] = iter([iter([c for c in cond_log.outcomes]) for cond_log in game_log.condition1])
-    action_errors.append(assess_actions_correctness(student_bot.action1, id, game_log.action1, conditions=conditions))
-    action_errors.append(assess_actions_correctness(student_bot.action2, id, game_log.action2, conditions=None))
-    action_errors.append(assess_actions_correctness(student_bot.action3, id, game_log.action3, conditions=None))
-    action_errors.append(assess_actions_correctness(student_bot.action4, id, game_log.action4, conditions=None))
+    action_errors.append(assess_actions_correctness(student_bot.action1, game_log.action1, conditions=conditions))
+    action_errors.append(assess_actions_correctness(student_bot.action2, game_log.action2, conditions=None))
+    action_errors.append(assess_actions_correctness(student_bot.action3, game_log.action3, conditions=None))
+    action_errors.append(assess_actions_correctness(student_bot.action4, game_log.action4, conditions=None))
 
     integration_errors: list[list[str]] = []
-    integration_errors.append(assess_integration_correctness(student_bot, id, game_log.integration))
+    integration_errors.append(assess_integration_correctness(student_bot, game_log.integration))
 
     return condition_errors, action_errors, integration_errors
 
@@ -127,7 +125,7 @@ class CheckingGamePlayEngine(Generic[T], GamePlayEngine):
                     outcome = self.implementation(perspective, leader_move)
                     expected_outcome = next(self.expected_outcomes_iterator)
                     if outcome != expected_outcome:
-                        self.errors.append(f"Something is wrong with in your code. Expected {expected_outcome} , but got {outcome} for the condition {self.implementation.__name__}. --- For input {simple_perspective_string(perspective, leader_move)}.")
+                        self.errors.append(f"Something seems wrong in your code. Expected {expected_outcome} , but got {outcome} for the condition {self.implementation.__name__}. --- For input {simple_perspective_string(perspective, leader_move)}.")
                 except Exception as e:
                     self.errors.append(f"An exception was raised from your bot's method {self.implementation.__name__} with message: {e}")
 
@@ -151,7 +149,7 @@ class CheckingGamePlayEngine(Generic[T], GamePlayEngine):
 
 
 def assess_conditions_correctness(condition_implementation: Callable[[PlayerPerspective, Optional[Move]], bool],
-                                  id: int, condition_game_logs: Iterable[ConditionGameLog]) -> list[str]:
+                                  condition_game_logs: Iterable[ConditionGameLog]) -> list[str]:
     for condition_game_log in condition_game_logs:
         game_id = condition_game_log.game_id
         outcomes: Iterable[bool] = condition_game_log.outcomes
@@ -166,7 +164,7 @@ def assess_conditions_correctness(condition_implementation: Callable[[PlayerPers
 
 
 def assess_actions_correctness(action_implementation: Callable[[PlayerPerspective, Optional[Move]], Move],
-                               id: int, action_game_logs: Iterable[ActionGameLog],
+                               action_game_logs: Iterable[ActionGameLog],
                                conditions: Iterator[Iterator[bool]] | None) -> list[str]:
 
     if conditions is None:
@@ -225,7 +223,7 @@ class IntegrationCheckingGamePlayEngine(GamePlayEngine):
         return req.errors
 
 
-def assess_integration_correctness(student_bot: AssignmentBot, id: int, game_logs: Iterable[ActionGameLog]) -> list[str]:
+def assess_integration_correctness(student_bot: AssignmentBot, game_logs: Iterable[ActionGameLog]) -> list[str]:
     for game_log in game_logs:
         game_id = game_log.game_id
         outcomes: Iterable[Move] = [to_schnapsen_move(move) for move in game_log.outcomes]
