@@ -131,7 +131,7 @@ class CheckingGamePlayEngine(Generic[T], GamePlayEngine):
                     if isinstance(e, NotImplementedError):
                         msg = str(e)
                     else:
-                        msg = traceback.format_exc(limit=1)
+                        msg = traceback.format_exc(limit=-1)
                     self.errors.append(f"An exception was raised from your bot's method {self.implementation.__name__} with message: {msg}")
 
             bot_move = super().get_move(bot, perspective, leader_move)
@@ -208,7 +208,7 @@ class IntegrationCheckingGamePlayEngine(GamePlayEngine):
                     if isinstance(e, NotImplementedError):
                         msg = str(e)
                     else:
-                        msg = traceback.format_exc(limit=1)
+                        msg = traceback.format_exc(limit=-1)
                     self.errors.append(f"An exception was raised by your bot with message: {msg}")
                     bot_move = expected_move
                 if bot_move != expected_move:
