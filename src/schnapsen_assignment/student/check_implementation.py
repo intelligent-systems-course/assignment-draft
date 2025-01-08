@@ -99,12 +99,12 @@ T = TypeVar('T', bound=bool | Move)
 def simple_perspective_string(perspective: PlayerPerspective, leader_move: Optional[Move]) -> str:
     valid_moves: list[Move] = perspective.valid_moves()
     trump_suit = perspective.get_trump_suit()
-    hand = perspective.get_hand()
-    won_cards = perspective.get_won_cards()
-    opponent_won_cards = perspective.get_opponent_won_cards()
-    known_cards_of_opponent_hand = perspective.get_known_cards_of_opponent_hand()
+    hand = perspective.get_hand().get_cards()
+    won_cards = perspective.get_won_cards().get_cards()
+    opponent_won_cards = perspective.get_opponent_won_cards().get_cards()
+    known_cards_of_opponent_hand = perspective.get_known_cards_of_opponent_hand().get_cards()
 
-    return f"Perspective[hand={[card for card in hand]}, phase={perspective.get_phase()}, leader_move={leader_move}, trump_suit={trump_suit}, valid_moves = {valid_moves}, won_cards={won_cards}, won_cards_opponent={opponent_won_cards}, known_opponent_cards={known_cards_of_opponent_hand}]"
+    return f"Perspective[\nhand={hand}, \nphase={perspective.get_phase()}, leader_move={leader_move}, trump_suit={trump_suit}, \nvalid_moves = {valid_moves}, \nwon_cards={won_cards}, \nwon_cards_opponent={opponent_won_cards}, \nknown_opponent_cards={known_cards_of_opponent_hand}]"
 
 
 class CheckingGamePlayEngine(Generic[T], GamePlayEngine):
@@ -126,7 +126,7 @@ class CheckingGamePlayEngine(Generic[T], GamePlayEngine):
                     outcome = self.implementation(perspective, leader_move)
                     expected_outcome = next(self.expected_outcomes_iterator)
                     if outcome != expected_outcome:
-                        self.errors.append(f"Something seems wrong in your code. Expected {expected_outcome} , but got {outcome} for {self.implementation.__name__}. --- For input {simple_perspective_string(perspective, leader_move)}.")
+                        self.errors.append(f"Something seems wrong in your code. Expected {expected_outcome} , but got {outcome} for {self.implementation.__name__}. \n--- For input {simple_perspective_string(perspective, leader_move)}.")
                 except Exception as e:
                     if isinstance(e, NotImplementedError):
                         msg = str(e)
@@ -212,7 +212,7 @@ class IntegrationCheckingGamePlayEngine(GamePlayEngine):
                     self.errors.append(f"An exception was raised by your bot with message: {msg}")
                     bot_move = expected_move
                 if bot_move != expected_move:
-                    self.errors.append(f"Bot played a wrong move. For input {perspective}, {expected_move} was expected, but got {bot_move}.")
+                    self.errors.append(f"Bot played a wrong move. \nFor input {perspective}, \n{expected_move} was expected, but got {bot_move}.")
                     bot_move = expected_move
             else:
                 bot_move = super().get_move(bot, perspective, leader_move)
